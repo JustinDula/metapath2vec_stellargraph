@@ -24,7 +24,7 @@ def link_examples_to_features(link_examples, transform_node, binary_operator):
 
 
 # 2. training classifier
-def link_prediction_classifier(max_iter=2000):
+def link_prediction_classifier(max_iter=6000):
 	lr_clf = LogisticRegressionCV(Cs=10, cv=10, scoring="roc_auc", max_iter=max_iter)
 	return Pipeline(steps=[("sc", StandardScaler()), ("clf", lr_clf)])
 
@@ -67,29 +67,10 @@ def operator_l2(u, v):
 	return (u - v) ** 2
 
 
-def run_link_prediction(binary_operator):
-	clf = train_link_prediction_model(
-		examples_train, labels_train, embedding_train, binary_operator
-	)
-	score = evaluate_link_prediction_model(
-		clf,
-		examples_model_selection,
-		labels_model_selection,
-		embedding_train,
-		binary_operator,
-	)
-
-	return {
-		"classifier": clf,
-		"binary_operator": binary_operator,
-		"score": score,
-	}
-
-
 # general utils
 def make_walks(
 		graph, metapaths, *,
-		num_walks=1, walk_length=10):
+		num_walks=10, walk_length=100):
 
 	rw = UniformRandomMetaPathWalk(graph)
 	return rw.run(
@@ -102,7 +83,7 @@ def make_walks(
 
 def metapath2vec_embedding(
 		walks, *,
-		context_window_size=10, num_iter=1, workers=CPU_COUNT, dimensions=128):
+		context_window_size=10, num_iter=1, workers=CPU_COUNT, dimensions=64):
 	model = Word2Vec(
 		walks,
 		size=dimensions,
